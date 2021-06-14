@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ProductGrpc.Data;
+using ProductGrpc.Services;
 
 namespace ProductGrpc
 {
@@ -23,6 +24,8 @@ namespace ProductGrpc
             {
                 options.UseInMemoryDatabase("Product"); //set In memory  with product name database
             });
+
+            services.AddAutoMapper(typeof(Startup));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -37,7 +40,7 @@ namespace ProductGrpc
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGrpcService<GreeterService>();
+                endpoints.MapGrpcService<ProductService>();
 
                 endpoints.MapGet("/", async context =>
                 {
