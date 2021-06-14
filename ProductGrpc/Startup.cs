@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using ProductGrpc.Data;
 
 namespace ProductGrpc
 {
@@ -17,6 +19,10 @@ namespace ProductGrpc
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddGrpc();
+            services.AddDbContext<ProductsContext>(options =>
+            {
+                options.UseInMemoryDatabase("Product"); //set In memory  with product name database
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
