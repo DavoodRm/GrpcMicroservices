@@ -12,17 +12,18 @@ using ShoppingCardGrpc.Protos;
 
 namespace ShoppingCardGrpc.Services
 {
-   
+   [Authorize]
     public class ShoppingCartService : ShoppingCartProtoService.ShoppingCartProtoServiceBase
     {
         private readonly ShoppingCartContext _shoppingCartDbContext;
-        //  private readonly DiscountService _discountService;
+        private readonly DiscountService _discountService;
         private readonly IMapper _mapper;
         private readonly ILogger<ShoppingCartService> _logger;
 
-        public ShoppingCartService(ShoppingCartContext shoppingCartDbContext, IMapper mapper, ILogger<ShoppingCartService> logger)
+        public ShoppingCartService(ShoppingCartContext shoppingCartDbContext, DiscountService discountService, IMapper mapper, ILogger<ShoppingCartService> logger)
         {
             _shoppingCartDbContext = shoppingCartDbContext;
+            _discountService = discountService;
             _mapper = mapper;
             _logger = logger;
         }
@@ -59,17 +60,19 @@ namespace ShoppingCardGrpc.Services
             return shoppingCartModel;
         }
 
-
+        [AllowAnonymous]
         public override async Task<AddItemIntoShoppingCartResponse> AddItemIntoShoppingCart(IAsyncStreamReader<AddItemIntoShoppingCartRequest> requestStream, ServerCallContext context)
         {
             while (await requestStream.MoveNext())
-            {
+            { 
+              
                 // Get sc if exist or not
                 // Check item if exist in sc or not
                 // if item exist +1 quantity
                 // if not exist add new item into sc
                 // check discount and set the item price
 
+                 
                 var shoppingCart = await _shoppingCartDbContext.ShoppingCart.FirstOrDefaultAsync(s => s.UserName == requestStream.Current.Username);
                 if (shoppingCart == null)
                 {
@@ -85,8 +88,8 @@ namespace ShoppingCardGrpc.Services
                 else
                 {
                     // GRPC CALL DISCOUNT SERVICE -- check discount and set the item price
-                    //  var discount = await _discountService.GetDiscount(requestStream.Current.DiscountCode);
-                    //    newAddedCartItem.Price -= discount.Amount;
+                      var discount = await _discountService.GetDiscount(requestStream.Current.DiscountCode);
+                        newAddedCartItem.Price -= discount.Amount;
 
                     shoppingCart.Items.Add(newAddedCartItem);
                 }
@@ -103,7 +106,7 @@ namespace ShoppingCardGrpc.Services
             return response;
         }
 
-
+        [AllowAnonymous]
         public override async Task<RemoveItemIntoShoppingCartResponse> RemoveItemIntoShoppingCart(RemoveItemIntoShoppingCartRequest request, ServerCallContext context)
         {
             // Get sc if exist or not
